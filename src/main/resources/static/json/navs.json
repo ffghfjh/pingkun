@@ -1,0 +1,61 @@
+{
+	"contentManagement": [
+		{
+			"title": "咨询管理",
+			"icon": "&#xe630;",
+			"href": "",
+			"spread": false,
+			"children": [
+				{
+					"title": "发布咨询",
+					"icon": "&#xe61c;",
+					"href": "page/addNews.html?type=1",
+					"spread": false
+				},
+				{
+					"title": "咨询信息",
+					"icon": "&#xe609;",
+					"href": "page/newsList.html",
+					"spread": false
+				},
+				{
+					"title": "报名信息",
+					"icon": "&#xe609;",
+					"href": "page/registList.html",
+					"spread": false
+				}
+			]
+		},
+		{
+			"title": "名片管理",
+			"icon": "&#xe630;",
+			"href": "",
+			"spread": false,
+			"children": [
+				{
+					"title": "添加名片",
+					"icon": "&#xe61c;",
+					"href": "page/addCallingCard.html?type=1",
+					"spread": false
+				},
+				{
+					"title": "名片信息",
+					"icon": "&#xe609;",
+					"href": "page/cardsList.html",
+					"spread": false,
+					"target": false
+				}
+			]
+		}
+	],
+	"memberCenter": [
+		{
+			"title": "用户中心",
+			"icon": "&#xe612;",
+			"href": "page/user/userList.html",
+			"spread": false
+		}
+	]
+}
+
+

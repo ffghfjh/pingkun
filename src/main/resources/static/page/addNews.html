@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>发布咨询</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script type="text/javascript" src="../js/jquery.js"></script>
+</head>
+<body>
+
+<div class="layui-form-item">
+    <label class="layui-form-label">发布资讯</label>
+    <div class="layui-input-block">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">标题</label>
+                <div class="layui-input-block">
+                    <input id="title" type="text" name="title" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">金额</label>
+                <div class="layui-input-block">
+                    <input id="money" type="number" name="money" required  lay-verify="required" placeholder="请输入报名金额" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">发布人</label>
+                <div class="layui-input-block">
+                    <input id="pubMan" type="text" name="pubMan" required  lay-verify="required" placeholder="请输入发布人" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">活动时间</label>
+                <div class="layui-input-block">
+                    <input id="time" type="text" class="layui-input" name="time" id="time" lay-verify="required" placeholder="请选择时间">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">活动地点</label>
+                <div class="layui-input-block">
+                    <input id="address" type="text" name="address" required  lay-verify="required" placeholder="请输入地点" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">内容</label>
+                <div class="layui-input-block">
+                    <textarea  name="context" id="context" style="display: none;"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" src="../layui/layui.js"></script>
+<script>
+    function getQueryVariable(variable)
+    {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
+    }
+    var type = getQueryVariable("type");
+    console.log("获取参数：type："+type)
+
+    //Demo
+    layui.use(['form','laydate','layedit'], function(){
+        var form = layui.form;
+        var laydate = layui.laydate;
+        var layedit = layui.layedit;
+         //建立编辑器
+        var context;
+        //时间选择器
+        laydate.render({
+            elem: '#time'
+            ,type: 'datetime'
+        });
+
+        //设置图片上传接口
+        layedit.set({
+            uploadImage: {
+                url: '/admin/uploadImg' //接口url
+                ,type: 'post' //默认post
+            }
+        })
+
+
+
+
+        if(type==2){
+            console.log("查询数据")
+            var id = getQueryVariable("id");
+            $.ajax({
+                url:"../admin/getActivityById",
+                data:{
+                    id:id
+                },
+                success:function (data) {
+                    console.log("获取活动数据");
+                    console.log(data.data)
+                    var ac = data.data;
+                    $("#title").attr("value",ac.title)
+                    $("#money").attr("value",ac.money)
+                    $("#pubMan").attr("value",ac.publishMan)
+                    $("#time").attr("value",ac.time)
+                    $("#address").attr("value",ac.address)
+                    $("#context").val(ac.context)
+                    context = layedit.build('context');
+                }
+            })
+        }
+        if(type == 1){
+            console.log("发布数据")
+             context = layedit.build('context');
+        }
+
+        //监听提交
+        form.on('submit(formDemo)', function(data){
+            var params = JSON.stringify(data.field);
+            layer.msg(JSON.stringify(data.field));
+            console.log(layedit.getContent(context))
+            if(type==1){
+                $.ajax({
+                    url:"/admin/addNews",
+                    method:'post',
+                    data:{
+                        "title":data.field.title,
+                        "pubMan":data.field.pubMan,
+                        "time":data.field.time,
+                        "address":data.field.address,
+                        "money":data.field.money,
+                        "context":layedit.getContent(context)
+                    },
+                    success:function (data) {
+                        console.log("添加资讯:"+data);
+                        if(data.code==1){
+                            layer.msg("发布成功");
+                        }
+
+                    }
+                })
+            }
+            if(type==2){
+                $.ajax({
+                    url:"/admin/editNews",
+                    method:'post',
+                    data:{
+                        "title":data.field.title,
+                        "pubMan":data.field.pubMan,
+                        "time":data.field.time,
+                        "address":data.field.address,
+                        "money":data.field.money,
+                        "context":layedit.getContent(context),
+                        "id":id
+                    },
+                    success:function (data) {
+                        console.log("修改资讯:"+data);
+                        if(data.code==1){
+                            layer.msg("修改成功");
+                        }else {
+                            layer.msg(data.msg)
+                        }
+
+                    }
+                })
+            }
+            return false;
+        });
+    });
+</script>
+
+</body>
+</html>

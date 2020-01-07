@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta charset="utf-8">
+    <title>用户中心--layui后台管理模板 2.0</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="../layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="../css/public.css" media="all"/>
+    <script src="../js/jquery.js"></script>
+</head>
+<body>
+
+<form class="layui-form">
+    <blockquote class="layui-elem-quote quoteBox">
+        <form class="layui-form">
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="number" class="layui-input searchVal" placeholder="请输入ID搜索"/>
+                </div>
+                <a class="layui-btn search_btn" data-type="reload">搜索</a>
+            </div>
+            <!--			<div class="layui-inline">-->
+            <!--				<a class="layui-btn layui-btn-normal addNews_btn">添加用户</a>-->
+            <!--			</div>-->
+            <!--			<div class="layui-inline">-->
+            <!--				<a class="layui-btn layui-btn-danger layui-btn-normal delAll_btn">批量删除</a>-->
+            <!--			</div>-->
+        </form>
+    </blockquote>
+    <table class="layui-table" id="newsList" lay-filter="newsList"></table>
+    <!--操作-->
+    <script type="text/html" id="newsListBar">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+<!--        <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="usable">已启用</a>-->
+<!--        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>-->
+    </script>
+    <script type="text/html" id="switchTpl">
+        <!-- 这里的 checked 的状态只是演示 -->
+        <input type="checkbox" name="sex" value="{{d.id}}" lay-skin="switch" lay-text="开|关" lay-filter="sexDemo" {{ d.state == 1 ? 'checked' : '' }}>
+    </script>
+</form>
+
+
+<script type="text/javascript" src="../layui/layui.js"></script>
+<script>
+    layui.use(['form', 'layer', 'table', 'laytpl'], function () {
+        var form = layui.form,
+            layer = parent.layer === undefined ? layui.layer : top.layer,
+            $ = layui.jquery,
+            laytpl = layui.laytpl,
+            table = layui.table;
+
+        //用户列表
+        var tableIns = table.render({
+            elem: '#newsList',
+            url: '/admin/getActivitys',
+            cellMinWidth: 95,
+            page: true,
+            height: "full-125",
+            limits: [10, 15, 20, 25],
+            limit: 20,
+            id: "newsList",
+            cols: [[
+                {field: 'id', title: 'ID', width: 80, sort: true, fixed: 'left'}
+                , {field: 'money', title: '报名金额', width: 120, sort: true,templet:function (d) {
+                        return d.money+"元"
+                    }}
+                , {field: 'title', title: '标题', width: 150, sort: true}
+                , {field: 'time', title: '活动时间', width: 200, sort: true}
+                , {field: 'publishMan', title: '发布者', width: 120}
+                // ,{field: 'context', title: '活动内容', minWidth:200, align:'center',templet:function(d){
+                //         return '<div>'+d.context+'</div>';
+                //     }}
+                , {field: 'address', title: '活动地点', width: 300}
+                ,{field:'state', title:'状态', width:85, templet: '#switchTpl', unresize: true}
+                , {title: '操作', minWidth: 175, templet: '#newsListBar', fixed: "right", align: "center"}
+            ]]
+        });
+
+        //监听性别操作
+        form.on('switch(sexDemo)', function(obj){
+            console.log(obj)
+            //layer.tips(this.value + ' ' + this.name + '：'+ obj.elem.checked, obj.othis);
+            if(obj.elem.checked){
+                console.log("开")
+                $.ajax({
+                    url:"../admin/uptActivityState",
+                    method:'post',
+                    data:{
+                        "state":1,
+                        "id":this.value
+                    },
+                    success:function (data) {
+
+                    }
+                })
+            }else {
+                console.log("关")
+                $.ajax({
+                    url:"../admin/uptActivityState",
+                    method:'post',
+                    data:{
+                        "state":0,
+                        "id":this.value
+                    },
+                    success:function (data) {
+
+                    }
+                })
+            }
+        });
+
+
+
+
+        //搜索【此功能需要后台配合，所以暂时没有动态效果演示】
+        $(".search_btn").on("click",function(){
+            // if($(".searchVal").val() != ''){
+            //
+            // }else{
+            //     layer.msg("请输入搜索的内容");
+            // }
+            table.reload("newsList",{
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+                where: {
+                    title: $(".searchVal").val()  //搜索的关键字
+                }
+            })
+        });
+
+
+
+        //列表操作
+        table.on('tool(newsList)', function (obj) {
+            console.log("触发事件")
+            var checked = obj.checked;
+            console.log(obj.checked); //当前是否选中状态
+            console.log(obj.data); //选中行的相关数据
+            console.log(obj.type); //如果触发的是全选，则为：all，如果触发的是单选，则为：one
+            var layEvent = obj.event,
+                data = obj.data;
+            console.log("列表操作："+data.state);
+
+            if (layEvent === 'edit') { //编辑
+                console.log("编辑用户")
+                console.log(data)
+                window.location.href="addNews.html?type=2&id="+data.id;
+            } else if (layEvent === 'usable') { //启用禁用
+                var _this = $(this),
+                    usableText = "是否确定禁用此用户？",
+                    btnText = "已禁用";
+                if (_this.text() == "已禁用") {
+                    usableText = "是否确定启用此用户？",
+                        btnText = "已启用";
+                }
+                layer.confirm(usableText, {
+                    icon: 3,
+                    title: '系统提示',
+                    cancel: function (index) {
+                        layer.close(index);
+                    }
+                }, function (index) {
+                    _this.text(btnText);
+                    layer.close(index);
+                }, function (index) {
+                    layer.close(index);
+                });
+            } else if (layEvent === 'del') { //删除
+                layer.confirm('确定删除此用户？', {icon: 3, title: '提示信息'}, function (index) {
+                    // $.get("删除文章接口",{
+                    //     newsId : data.newsId  //将需要删除的newsId作为参数传入
+                    // },function(data){
+                    tableIns.reload();
+                    layer.close(index);
+                    // })
+                });
+            }
+        });
+    })
+</script>
+</body>
+
+</html>
